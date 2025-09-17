@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Producto;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $totalProductos = Producto::count();
-        $stockTotal = Producto::sum('stock');
-        $valorTotal = Producto::sum(\DB::raw('stock * precio'));
 
-        return view('dashboard', compact('totalProductos', 'stockTotal', 'valorTotal'));
+        // Sumatoria de todas las unidades en stock
+        $stockTotal = Producto::sum('cantidad');
+
+        // Valor acumulado del inventario según precio de compra
+        $valorCompra = Producto::sum(DB::raw('cantidad * precio_compra'));
+
+        // Valor acumulado del inventario según precio de venta
+        $valorVenta = Producto::sum(DB::raw('cantidad * precio_venta'));
+
+        return view('dashboard', compact(
+            'totalProductos',
+            'stockTotal',
+            'valorCompra',
+            'valorVenta'
+        ));
     }
 }
