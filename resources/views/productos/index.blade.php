@@ -1,81 +1,110 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="mb-4 text-center">📋 Lista de Productos</h1>
-
-    {{-- Barra de búsqueda --}}
-    <form method="GET" action="{{ route('productos.index') }}" class="row g-3 mb-4 align-items-center">
-        <div class="col-md-6">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Buscar por nombre o código...">
-        </div>
-
-        {{-- Botones de búsqueda y limpiar --}}
-        <div class="col-md-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">🔍 Buscar</button>
-            <a href="{{ route('productos.index') }}" class="btn btn-secondary">🧹 Limpiar</a>
-        </div>
+    <div class="container">
+        <h1 class="mb-4 text-center">📋 Lista de Productos</h1>
 
         {{-- Botón nuevo producto --}}
-        <div class="col-md-2 text-end">
-            <a href="{{ route('productos.create') }}" class="btn btn-success w-100">➕ Nuevo Producto</a>
+        <div class="mb-3 text-end">
+            <a href="{{ route('productos.create') }}" class="btn btn-success">➕ Nuevo Producto</a>
         </div>
-    </form>
 
-    {{-- Mensajes de éxito --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+        {{-- Mensajes de éxito --}}
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
 
-    {{-- Tabla de productos --}}
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Código</th>
-                <th>Cantidad</th>
-                <th>Precio Compra</th>
-                <th>Precio Venta</th>
-                <th>Stock Mínimo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($productos as $producto)
-                <tr @if($producto->cantidad <= $producto->min_stock) class="table-warning" @endif>
-                    <td>{{ $producto->nombre }}</td>
-                    <td>{{ $producto->codigo }}</td>
-                    <td>
-                        {{ $producto->cantidad }}
-                        @if($producto->cantidad <= $producto->min_stock)
-                            <span class="badge bg-danger ms-2">⚠ Bajo Stock</span>
-                        @endif
-                    </td>
-                    <td>${{ number_format($producto->precio_compra, 0, ',', '.') }}</td>
-                    <td>${{ number_format($producto->precio_venta, 0, ',', '.') }}</td>
-                    <td>{{ $producto->min_stock }}</td>
-                    <td class="text-center">
-                        <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
-                        <form action="{{ route('productos.destroy', $producto->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este producto?')">🗑️ Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
+        {{-- Tabla de productos con DataTables --}}
+        <table id="productosTable" class="table table-bordered table-striped">
+            <thead class="table-dark">
                 <tr>
-                    <td colspan="7" class="text-center">⚠️ No se encontraron productos.</td>
+                    <th>Nombre</th>
+                    <th>Código</th>
+                    <th>Cantidad</th>
+                    <th>Precio Compra</th>
+                    <th>Precio Venta</th>
+                    <th>Stock Mínimo</th>
+                    <th>Acciones</th>
                 </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{-- Paginación --}}
-    <div class="d-flex justify-content-center">
-        {{ $productos->links() }}
+            </thead>
+            <tbody>
+                @forelse ($productos as $producto)
+                    <tr @if($producto->cantidad <= $producto->min_stock) class="table-warning" @endif>
+                        <td>{{ $producto->nombre }}</td>
+                        <td>{{ $producto->codigo }}</td>
+                        <td>
+                            {{ $producto->cantidad }}
+                            @if($producto->cantidad <= $producto->min_stock)
+                                <span class="badge bg-danger ms-2">⚠ Bajo Stock</span>
+                            @endif
+                        </td>
+                        <td>${{ number_format($producto->precio_compra, 0, ',', '.') }}</td>
+                        <td>${{ number_format($producto->precio_venta, 0, ',', '.') }}</td>
+                        <td>{{ $producto->min_stock }}</td>
+                        <td class="text-center">
+                            <a href="{{ route('productos.edit', $producto->id) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                            <form action="{{ route('productos.destroy', $producto->id) }}" method="POST"
+                                style="display:inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('¿Seguro que deseas eliminar este producto?')">🗑️ Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center">⚠️ No se encontraron productos.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
-</div>
 @endsection
+
+@push('scripts')
+    {{-- JS de DataTables y extensiones --}}
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#productosTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json',
+                    search: "🔍 Buscar referencias:",
+                    lengthMenu: "Mostrar _MENU_ registros por página",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ productos",
+                    infoEmpty: "Mostrando 0 a 0 de 0 productos",
+                    infoFiltered: "(filtrado de _MAX_ productos en total)",
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "Siguiente",
+                        previous: "Anterior"
+                    }
+                },
+                pageLength: 10,
+                responsive: true,
+                ordering: true,
+                searching: true,
+                dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
+                buttons: [
+                    { extend: 'copy', text: '📋 Copiar', className: 'btn btn-secondary' },
+                    { extend: 'excel', text: '📊 Excel', className: 'btn btn-success' },
+                    { extend: 'pdf', text: '📄 PDF', className: 'btn btn-danger' },
+                    { extend: 'print', text: '🖨️ Imprimir', className: 'btn btn-info' }
+                ],
+                pagingType: "full_numbers",
+                renderer: 'bootstrap' // 👈 FORZAMOS Bootstrap en la paginación
+            });
+        });
+    </script>
+@endpush

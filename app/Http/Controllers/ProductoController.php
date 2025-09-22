@@ -21,7 +21,7 @@ class ProductoController extends Controller
         }
 
         // Paginación de 10 productos
-        $productos = $query->orderBy('id', 'desc')->paginate(10);
+        $productos = $query->orderBy('id', 'desc')->get();
 
         return view('productos.index', compact('productos'));
     }
