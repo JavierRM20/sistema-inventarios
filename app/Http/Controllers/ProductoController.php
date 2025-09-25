@@ -40,7 +40,7 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'        => 'required|string|max:255',
+            'nombre'        => 'required|string|max:255|unique:productos,nombre',
             'codigo'        => 'required|string|max:50|unique:productos,codigo',
             'cantidad'      => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
@@ -48,6 +48,7 @@ class ProductoController extends Controller
             'min_stock'     => 'required|integer|min:0',    
         ], [
             'nombre.required'   => 'El nombre es obligatorio.',
+            'nombre.unique'     => 'El nombre ya existe, ingrese uno diferente.',
             'codigo.required'   => 'El código es obligatorio.',
             'codigo.unique'     => 'El código ya existe, ingrese uno diferente.',
             'cantidad.required' => 'La cantidad es obligatoria.',
@@ -75,7 +76,7 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto)
     {
         $request->validate([
-            'nombre'        => 'required|string|max:255',
+            'nombre'        => 'required|string|max:255|unique:productos,nombre,' . ($producto->id ?? ''),
             'codigo'        => 'required|string|max:50|unique:productos,codigo,' . ($producto->id ?? ''),
             'cantidad'      => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
@@ -83,6 +84,7 @@ class ProductoController extends Controller
             'min_stock'     => 'required|integer|min:0',    
         ], [
             'nombre.required'   => 'El nombre es obligatorio.',
+            'nombre.unique'     => 'El nombre ya existe, ingrese uno diferente.',
             'codigo.required'   => 'El código es obligatorio.',
             'codigo.unique'     => 'El código ya existe, ingrese uno diferente.',
             'cantidad.required' => 'La cantidad es obligatoria.',

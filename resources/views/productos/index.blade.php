@@ -8,7 +8,10 @@
         <div class="mb-3 text-end">
             <a href="{{ route('productos.create') }}" class="btn btn-success">➕ Nuevo Producto</a>
         </div>
-
+        {{-- Botón registrar movimiento --}}
+        <div class="text-end">
+            <a href="{{ route('movimientos.create') }}" class="btn btn-primary mb-3">➕ Registrar Movimiento</a>
+        </div>
         {{-- Mensajes de éxito --}}
         @if(session('success'))
             <div class="alert alert-success">
@@ -74,6 +77,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
+    {{-- Plugin para ordenar de forma natural --}}
+    <script>
+        jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+            "natural-asc": function (a, b) {
+                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+            },
+            "natural-desc": function (a, b) {
+                return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+            }
+        });
+    </script>
+
     <script>
         $(document).ready(function () {
             $('#productosTable').DataTable({
@@ -103,7 +118,16 @@
                     { extend: 'print', text: '🖨️ Imprimir', className: 'btn btn-info' }
                 ],
                 pagingType: "full_numbers",
-                renderer: 'bootstrap' // 👈 FORZAMOS Bootstrap en la paginación
+                renderer: 'bootstrap',
+
+                // 👇 Ordenar alfabéticamente (natural) por la primera columna (Nombre)
+                columnDefs: [
+                    { targets: 0, type: 'natural' },
+                    { targets: 2, type: "num" },       // Cantidad
+                    { targets: 3, type: "num-fmt" },   // Precio Compra
+                    { targets: 4, type: "num-fmt" }    // Precio Venta
+                ],
+                order: [[0, 'asc']]
             });
         });
     </script>
